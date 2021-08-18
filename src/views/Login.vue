@@ -23,6 +23,9 @@
 </template>
 
 <script>
+import session from '../utils/auth.js'
+import { login } from '../api/user.js'
+
 export default {
   name: 'Login',
   data() {
@@ -51,10 +54,11 @@ export default {
     login() {
       this.$refs.loginForm.validate(async valid => {
         if (!valid) return;
-        const { data: res } = await this.$http.post('login', this.loginForm);
+        const { data: res } = await login(this.loginForm);
         if (res.meta.status !== 200) return this.$error('登陆失败！');
         this.$success('登陆成功');
-        window.sessionStorage.setItem('TOKEN', res.data.token);
+        console.log(res);
+        session.setStorage('TOKEN', res.data.token);
         this.$router.push('/home');
       })
     }

@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "401225",
+      "name": "users",
+      "font_class": "users",
+      "unicode": "e8b5",
+      "unicode_decimal": 59573
+    },
+    {
+      "icon_id": "7707645",
+      "name": "tijikongjian",
+      "font_class": "tijikongjian",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "10202852",
+      "name": "danju",
+      "font_class": "danju",
+      "unicode": "e65b",
+      "unicode_decimal": 58971
+    },
+    {
+      "icon_id": "11795784",
+      "name": "baobiao",
+      "font_class": "baobiao",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "11795842",
+      "name": "shangpin",
+      "font_class": "shangpin",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
       "icon_id": "18883567",
       "name": "锁",
       "font_class": "suo",
