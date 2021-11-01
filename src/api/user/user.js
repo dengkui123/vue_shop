@@ -1,6 +1,6 @@
 // 用户接口
 
-import request from './index.js'
+import request from '../request.js'
 // 用户登录
 export function login(params) {
   return request({

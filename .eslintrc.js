@@ -23,6 +23,7 @@ module.exports = {
     'space-before-function-paren': 0,
     'quotes': 0,
     'quote-props': 0,
+    'no-undef': 0,
 
   }
 }

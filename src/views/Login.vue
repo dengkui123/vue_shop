@@ -24,7 +24,7 @@
 
 <script>
 import session from '../utils/auth.js'
-import { login } from '../api/user.js'
+import { login } from '../api/index.js'
 
 export default {
   name: 'Login',

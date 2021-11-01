@@ -1,4 +1,4 @@
-import request from "./index.js";
+import request from "../request.js";
 
 // 获取菜单列表
 export function getMenuList() {

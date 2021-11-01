@@ -60,7 +60,7 @@
 
 <script>
 import session from "../utils/auth.js";
-import { getMenuList } from "../api/home.js";
+import { getMenuList } from "../api/index.js";
 export default {
   name: "Home",
   data() {

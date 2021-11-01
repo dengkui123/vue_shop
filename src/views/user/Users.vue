@@ -159,7 +159,7 @@ import {
   getUserById,
   editUser,
   removeUserById,
-} from '@/api/user.js';
+} from '@/api/index.js';
 
 export default {
   name: 'Users',
