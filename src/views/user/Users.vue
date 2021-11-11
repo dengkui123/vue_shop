@@ -68,6 +68,7 @@
                 type="warning"
                 icon="el-icon-setting"
                 size="mini"
+                @click="setRole(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -123,6 +124,7 @@
       :visible.sync="editDialogVisible"
       width="50%"
       @close="editDialogClosed"
+      :close-on-click-modal="false"
     >
       <!-- 内容主体区域 -->
       <el-form
@@ -148,6 +150,36 @@
         <el-button type="primary" @click="editUser">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog
+      title="提示"
+      :visible.sync="setRoleDialogVisible"
+      width="50%"
+      :close-on-click-modal="false"
+      @close="setRoleDialogClosed"
+    >
+      <div>
+        <p>当前的用户：{{ userInfo.username }}</p>
+        <p>当前的用户：{{ userInfo.role_name }}</p>
+        <p>
+          分配新角色：
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in rolesList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -159,10 +191,12 @@ import {
   getUserById,
   editUser,
   removeUserById,
-} from '@/api/index.js';
+  getRolesList,
+  setUserRoles,
+} from "@/api/index.js";
 
 export default {
-  name: 'Users',
+  name: "Users",
   data() {
     const checkEmail = (rule, value, callback) => {
       const regEmail =
@@ -170,7 +204,7 @@ export default {
       if (regEmail.test(value)) {
         return callback();
       }
-      callback(new Error('请输入合法邮箱'));
+      callback(new Error("请输入合法邮箱"));
     };
     const checkMobile = (rule, value, callback) => {
       const regMobile =
@@ -178,104 +212,109 @@ export default {
       if (regMobile.test(value)) {
         return callback();
       }
-      callback(new Error('请输入合法手机号'));
+      callback(new Error("请输入合法手机号"));
     };
     return {
       userList: [],
       total: 0,
       queryInfo: {
-        query: '',
+        query: "",
         pagenum: 1,
         pagesize: 5,
       },
       addDialogVisible: false,
       editDialogVisible: false,
       addForm: {
-        username: 'dengkui123',
-        password: 'dengkui',
-        email: '1509963767@qq.com',
-        mobile: '15528033382',
+        username: "dengkui123",
+        password: "dengkui",
+        email: "1509963767@qq.com",
+        mobile: "15528033382",
       },
       addFormRules: {
         username: [
           {
             required: true,
-            message: '请输入用户名',
-            trigger: 'blur',
+            message: "请输入用户名",
+            trigger: "blur",
           },
           {
             min: 3,
             max: 10,
-            message: '用户名的长度在3-10个字符之间',
-            trigger: 'blur',
+            message: "用户名的长度在3-10个字符之间",
+            trigger: "blur",
           },
         ],
         password: [
           {
             required: true,
-            message: '请输入密码',
-            trigger: 'blur',
+            message: "请输入密码",
+            trigger: "blur",
           },
           {
             min: 6,
             max: 15,
-            message: '密码的长度在6-15个字符之间',
-            trigger: 'blur',
+            message: "密码的长度在6-15个字符之间",
+            trigger: "blur",
           },
         ],
         email: [
           {
             required: true,
-            message: '请输入邮箱',
-            trigger: 'blur',
+            message: "请输入邮箱",
+            trigger: "blur",
           },
           {
             validator: checkEmail,
-            trigger: 'blur',
+            trigger: "blur",
           },
         ],
         mobile: [
           {
             required: true,
-            message: '请输入手机号',
-            trigger: 'blur',
+            message: "请输入手机号",
+            trigger: "blur",
           },
           {
             validator: checkMobile,
-            trigger: 'blur',
+            trigger: "blur",
           },
         ],
       },
       editForm: {
-        username: '',
-        password: '',
-        email: '',
-        mobile: '',
+        username: "",
+        password: "",
+        email: "",
+        mobile: "",
       },
       editFormRules: {
         email: [
           {
             required: true,
-            message: '请输入邮箱',
-            trigger: 'blur',
+            message: "请输入邮箱",
+            trigger: "blur",
           },
           {
             validator: checkEmail,
-            trigger: 'blur',
+            trigger: "blur",
           },
         ],
         mobile: [
           {
             required: true,
-            message: '请输入手机号',
-            trigger: 'blur',
+            message: "请输入手机号",
+            trigger: "blur",
           },
           {
             validator: checkMobile,
-            trigger: 'blur',
+            trigger: "blur",
           },
         ],
       },
+      setRoleDialogVisible: false,
+      userInfo: {},
+      rolesList: [],
+      // 选中的角色ID
+      selectedRoleId: "",
     };
   },
   methods: {
@@ -283,7 +322,7 @@ export default {
     async getUserList() {
       const { data: res } = await getUserList(this.queryInfo);
       if (res.meta.status !== 200) {
-        return this.$error('获取用户列表失败！');
+        return this.$error("获取用户列表失败！");
       }
       this.userList = res.data.users;
       this.total = res.data.total;
@@ -297,9 +336,9 @@ export default {
       );
       if (res.meta.status !== 200) {
         userInfo.mg_state = !userInfo.mg_state;
-        return this.$error('更新用户状态失败！');
+        return this.$error("更新用户状态失败！");
       }
-      this.$success('更新用户状态成功！');
+      this.$success("更新用户状态成功！");
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
@@ -324,11 +363,11 @@ export default {
           if (res.meta.status === 400) {
             return this.$error(res.meta.msg);
           }
-          this.$error('添加用户失败');
+          this.$error("添加用户失败");
         } else {
           // 隐藏对话框
           this.addDialogVisible = false;
-          this.$success('添加用户成功');
+          this.$success("添加用户成功");
           // 重新获取用户列表数据
           this.getUserList();
         }
@@ -338,7 +377,7 @@ export default {
     async showEditDialog(id) {
       const { data: res } = await getUserById(id);
       if (res.meta.status !== 200) {
-        return this.$error('查询用户信息失败！');
+        return this.$error("查询用户信息失败！");
       }
       this.editForm = res.data;
       this.editDialogVisible = true;
@@ -353,11 +392,11 @@ export default {
         if (!valid) return;
         const { data: res } = await editUser(this.editForm);
         if (res.meta.status !== 200) {
-          this.$error('修改用户信息失败！');
+          this.$error("修改用户信息失败！");
         } else {
           // 隐藏对话框
           this.editDialogVisible = false;
-          this.$success('修改用户信息成功！');
+          this.$success("修改用户信息成功！");
           // 重新获取用户列表数据
           this.getUserList();
         }
@@ -365,24 +404,58 @@ export default {
     },
     // 删除用户信息
     async removeById(id) {
-      const confirmRes = await this.$confirm('是否删除该用户?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).catch(err => err);
-      if (confirmRes !== 'confirm') {
-        return this.$message.info('已取消删除！');
+      const confirmRes = await this.$confirm("是否删除该用户?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).catch((err) => err);
+      if (confirmRes !== "confirm") {
+        return this.$message.info("已取消删除！");
       }
       const { data: res } = await removeUserById(id);
       if (res.meta.status !== 200) {
-        return this.$error('删除用户失败！');
+        return this.$error("删除用户失败！");
       } else {
-        this.$success('删除用户成功！');
+        this.$success("删除用户成功！");
         // 重新获取用户列表
         this.getUserList();
       }
-    } 
+    },
+    // 展示分配角色对话框
+    setRole(userInfo) {
+      this.userInfo = userInfo;
+      this.getRolesList();
+      this.setRoleDialogVisible = true;
+    },
+    // 获取角色列表
+    async getRolesList() {
+      const { data: res } = await getRolesList();
+      if (res.meta.status !== 200) {
+        return this.$error("获取角色列表失败！");
+      } else {
+        this.rolesList = res.data;
+      }
+    },
+    // 点击按钮分配角色
+    async saveRoleInfo() {
+      if (!this.selectedRoleId) {
+        return this.$error("请选择要分配的角色");
+      }
+      const { data: res } = await setUserRoles(
+        this.userInfo.id,
+        this.selectedRoleId
+      );
+      this.$success(res.meta.msg);
+      this.getUserList();
+      this.setRoleDialogVisible = false;
+    },
+    // 监听分配角色对话框关闭事件
+    setRoleDialogClosed() {
+      this.selectedRoleId = "";
+      this.userInfo = {};
+    },
   },
+
   created() {
     this.getUserList();
   },

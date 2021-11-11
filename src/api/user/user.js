@@ -57,3 +57,14 @@ export function removeUserById(id) {
     method: 'delete',
   })
 }
+
+// 给用户分配角色
+export function setUserRoles(id, rid) {
+  return request({
+    url: 'users/' + id + '/role',
+    method: 'put',
+    data: {
+      rid
+    }
+  })
+}

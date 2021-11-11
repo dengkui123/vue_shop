@@ -1,8 +1,8 @@
 // 接口汇总
 import { getMenuList } from './home/home.js'
-import { login, getUserList, userStateChanged, addUser, getUserById, editUser, removeUserById } from './user/user.js'
+import { login, getUserList, userStateChanged, addUser, getUserById, editUser, removeUserById, setUserRoles } from './user/user.js'
 import { getRightsList } from './rights/rights.js'
-import { getRolesList } from './rights/roles.js'
+import { getRolesList, delRolesById, setRoleRights } from './rights/roles.js'
 
 export {
   login,
@@ -15,4 +15,7 @@ export {
   getMenuList,
   getRightsList,
   getRolesList,
+  delRolesById,
+  setRoleRights,
+  setUserRoles
 }
